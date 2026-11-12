@@ -16,6 +16,7 @@ Configure [the traffic levels](#traffic-levels) you want in config.json.
 2. Create your own configuration based on the testing you want to do `cp config.example.json config.json`.
 3. Look up resource IDs in ArchivesSpace; `astress discover [-f config.json]`. This primes a cache file .astress-cache.json with IDs so tests hit actual resources instead of 404ing.
 4. Run the stress test `astress run [-f config.json]`.
+5. Run `docker compose down` when done.
 
 ## Limitations
 
