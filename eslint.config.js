@@ -16,7 +16,8 @@ export default [
       },
     },
     rules: {
-      'no-unused-vars': ['error', {argsIgnorePattern: '^_'}],
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      'object-curly-spacing': ['warn', 'always'],
       semi: ["warn", "never"],
       'jsdoc/require-jsdoc': ['warn', {
         require: {
