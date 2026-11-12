@@ -7,6 +7,30 @@ import { loadConfig } from '../src/config.js'
 import { ASpace } from '../src/aspace.js'
 import { main } from '../src/cli.js'
 
+/**
+ * Mock global fetch with a route-to-JSON-response map and record all calls.
+ * Includes a default `/users/admin/login` response unless overridden.
+ * @param {object} t - Node test context
+ * @param {Record<string, unknown>} [routes={}] - Map of URL pathname suffixes to response payloads
+ * @param {unknown} [fallback=[]] - Default JSON payload when no route matches
+ * @returns {Array<{ url: string, options: object }>} Recorded fetch calls
+ */
+function mockFetch(t, routes = {}, fallback = []) {
+  const calls = []
+  const allRoutes = {
+    '/users/admin/login': { session: 'tok-123' },
+    ...routes,
+  }
+
+  t.mock.method(globalThis, 'fetch', async (url, options) => {
+    calls.push({ url, options })
+    const match = Object.entries(allRoutes).find(([route]) => url.endsWith(route))
+    return Response.json(match ? match[1] : fallback)
+  })
+
+  return calls
+}
+
 test('loads config from file and resolves aspace client settings', () => {
   const config = loadConfig('example.config.json')
   assert.strictEqual(config.discovery.cacheFile, '.astress-cache.json')
@@ -21,15 +45,7 @@ test('loads config from file and resolves aspace client settings', () => {
 })
 
 test('handles anonymous PUI, anonymous API, and authenticated API requests', async (t) => {
-  const calls = []
-  // all HTTP requests use fetch as base
-  t.mock.method(globalThis, 'fetch', async (url, options) => {
-    calls.push({ url, options })
-    if (url.endsWith('/users/admin/login')) {
-      return Response.json({ session: 'tok-123' })
-    }
-    return Response.json({ ok: true })
-  })
+  const calls = mockFetch(t, {}, { ok: true })
 
   const config = loadConfig('example.config.json')
   const aspace = new ASpace(config.aspace)
@@ -58,12 +74,7 @@ test('handles anonymous PUI, anonymous API, and authenticated API requests', asy
 })
 
 test('discover subcommand handles non-existent and existent cache files', async (t) => {
-  t.mock.method(globalThis, 'fetch', async (url) => {
-    if (url.endsWith('/users/admin/login')) {
-      return Response.json({ session: 'tok-123' })
-    }
-    return Response.json([])
-  })
+  mockFetch(t)
 
   const dir = mkdtempSync(join(tmpdir(), 'astress-'))
   t.after(() => rmSync(dir, { recursive: true, force: true }))
@@ -88,17 +99,11 @@ test('discover subcommand handles non-existent and existent cache files', async 
 })
 
 test('discover harvests published repositories and initializes resource buckets', async (t) => {
-  t.mock.method(globalThis, 'fetch', async (url) => {
-    if (url.endsWith('/users/admin/login')) {
-      return Response.json({ session: 'tok-123' })
-    }
-    if (url.endsWith('/repositories')) {
-      return Response.json([
-        { uri: '/repositories/2', publish: true },
-        { uri: '/repositories/3', publish: false },
-      ])
-    }
-    return Response.json([])
+  mockFetch(t, {
+    '/repositories': [
+      { uri: '/repositories/2', publish: true },
+      { uri: '/repositories/3', publish: false },
+    ],
   })
 
   const dir = mkdtempSync(join(tmpdir(), 'astress-'))
