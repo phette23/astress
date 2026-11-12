@@ -160,3 +160,15 @@ test('discover harvests and caps global resources up to maxSamplePerType', async
   assert.deepStrictEqual(manifest.resources['agents/corporate_entities'], [])
   assert.deepStrictEqual(manifest.resources['agents/families'], [])
 })
+
+test('cli prints help output with -h and --help', async (t) => {
+  const lines = []
+  t.mock.method(console, 'log', (msg) => lines.push(msg))
+
+  await main(['--help'])
+  const output = lines.join('\n')
+  assert.match(output, /Usage: astress/)
+  assert.match(output, /-f, --config/)
+  assert.match(output, /--debug/)
+  assert.match(output, /-h, --help/)
+})
