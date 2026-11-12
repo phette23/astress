@@ -10,6 +10,7 @@ services:
         condition: service_started
     env_file:
       - .env.docker.dev
+      - .env
     ports:
       - "8080:8080"
       - "8081:8081"
@@ -17,11 +18,11 @@ services:
     deploy:
           resources:
             limits:
-              cpus: "2.0"
-              memory: 4g
+              cpus: ${LIMIT_CPU:-"2.0"}
+              memory: ${LIMIT_MEM:-"4g"}
             reservations:
-              cpus: "2.0"
-              memory: 4g
+              cpus: ${RESERVE_CPU:-"2.0"}
+              memory: ${RESERVE_MEM:-"4g"}
 
   db:
     image: mysql:8

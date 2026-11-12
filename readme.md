@@ -6,7 +6,7 @@ Testing how ASpace holds up over various levels of both public traffic and API u
 
 Requires docker, node, and pnpm.
 
-Configure [the compute limits](#compute-scaling) you want to test in docker-compose.yml, specifically the `deploy` section under the `app` service. Also set the ArchivesSpace version you want to test on the `image` line.
+Configure [the compute limits](#compute-scaling) you want in a .env file or modify .env.docker.dev directly. In docker-compose.yml, you can set the ArchivesSpace version you want to test on the `image` line.
 
 Configure [the traffic levels](#traffic-levels) you want in config.json.
 
@@ -27,7 +27,7 @@ Only using the demo database for now, so if it is not representative, the tests 
 
 ## Compute Scaling
 
-Use [the `deploy.resources` section of docker-compose.yml](https://docs.docker.com/reference/compose-file/deploy/#resources)to set CPU and memory limits for the ArchivesSpace container. You can match whatever a particular hosting service offers, for instance. I recommend setting the `limits` and `reservations` to be the same so the container is guaranteed to have that much compute available.
+Use [the `deploy.resources` section of docker-compose.yml](https://docs.docker.com/reference/compose-file/deploy/#resources)to set CPU and memory limits for the ArchivesSpace container. These limit values are read from .env.docker.dev first, with defaults, and can be overridden by a local .env file. The idea is to match the compute resources a particular hosting service offers. I recommend setting the `limits` and `reservations` to be the same so the container is guaranteed to have that much compute available.
 
 You can edit `JAVA_OPTS` in .env.docker.dev to set heap size and other JVM options.
 
