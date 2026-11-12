@@ -7,13 +7,10 @@ export const GLOBAL_RESOURCES = [
   'agents/families',
 ]
 
+// Start with top-level 'resources' (collections); child archival_objects and other
+// repo-scoped types will be added as their endpoints are wired up
 export const REPO_RESOURCES = [
   'resources',
-  'archival_objects',
-  'digital_objects',
-  'accessions',
-  'classifications',
-  'top_containers',
 ]
 
 /**
@@ -43,17 +40,39 @@ export async function discoverGlobal(_aspace, _type, _maxSample) {
 
 /**
  * Discover URIs for a repository-scoped resource type across all published repositories.
- * Takes all repositories at once so sampling up to maxSample is distributed across repos
- * rather than letting the first repository exhaust the quota.
- * @param {ASpace} _aspace - Configured ASpace client
- * @param {string[]} _repositories - Published repository URIs
- * @param {string} _type - Repo-scoped endpoint name (e.g. 'resources', 'archival_objects')
- * @param {number} _maxSample - Maximum total URIs to sample across all repositories
+ * Fetches ID lists from each repository and interleaves them round-robin up to maxSample
+ * so the first repository cannot exhaust the sample quota.
+ * @param {ASpace} aspace - Configured ASpace client
+ * @param {string[]} repositories - Published repository URIs
+ * @param {string} type - Repo-scoped endpoint name (e.g. 'resources')
+ * @param {number} maxSample - Maximum total URIs to sample across all repositories
  * @returns {Promise<string[]>} Sampled resource URIs
  */
-export async function discoverRepoScoped(_aspace, _repositories, _type, _maxSample) {
-  // shortcut: returns empty list until repo-scoped resource harvesting is implemented
-  return []
+export async function discoverRepoScoped(aspace, repositories, type, maxSample) {
+  const listsByRepo = await Promise.all(
+    repositories.map(async (repoUri) => {
+      // ?all_ids=true returns a flat array of numeric IDs in one request without pagination
+      const res = await aspace.api(`${repoUri}/${type}?all_ids=true`)
+      if (!res.ok) throw new Error(`Failed to fetch ${repoUri}/${type}: ${res.status}`)
+      const ids = await res.json()
+      return ids.map((id) => `${repoUri}/${type}/${id}`)
+    })
+  )
+
+  // Round-robin across repositories so every published repo is represented in the sample
+  const sampled = []
+  for (let i = 0; sampled.length < maxSample; i++) {
+    let added = false
+    for (const uris of listsByRepo) {
+      if (i < uris.length && sampled.length < maxSample) {
+        sampled.push(uris[i])
+        added = true
+      }
+    }
+    if (!added) break
+  }
+
+  return sampled
 }
 
 /**

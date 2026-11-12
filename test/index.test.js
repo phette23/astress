@@ -99,12 +99,15 @@ test('discover subcommand handles non-existent and existent resources files', as
   assert.deepStrictEqual(secondManifest.repositories, [])
 })
 
-test('discover harvests published repositories and initializes resource buckets', async (t) => {
+test('discover harvests published repositories and samples repo-scoped resources across repos', async (t) => {
   mockFetch(t, {
     '/repositories': [
       { uri: '/repositories/2', publish: true },
       { uri: '/repositories/3', publish: false },
+      { uri: '/repositories/4', publish: true },
     ],
+    '/repositories/2/resources?all_ids=true': [1, 2, 3],
+    '/repositories/4/resources?all_ids=true': [10, 20],
   })
 
   const dir = mkdtempSync(join(tmpdir(), 'astress-'))
@@ -114,12 +117,16 @@ test('discover harvests published repositories and initializes resource buckets'
   const configFile = join(dir, 'config.json')
   writeFileSync(configFile, JSON.stringify({
     aspace: { apiUrl: 'http://localhost:8089', username: 'admin', password: 'admin' },
-    discovery: { resourcesFile },
+    discovery: { resourcesFile, maxSamplePerType: 3 },
   }))
 
   await main(['discover', '-f', configFile])
   const manifest = JSON.parse(readFileSync(resourcesFile, 'utf8'))
-  assert.deepStrictEqual(manifest.repositories, ['/repositories/2'])
+  assert.deepStrictEqual(manifest.repositories, ['/repositories/2', '/repositories/4'])
   assert.ok('subjects' in manifest.resources)
-  assert.ok('resources' in manifest.resources)
+  assert.deepStrictEqual(manifest.resources.resources, [
+    '/repositories/2/resources/1',
+    '/repositories/4/resources/10',
+    '/repositories/2/resources/2',
+  ])
 })
