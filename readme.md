@@ -25,6 +25,8 @@ Large background jobs are probably the number one reason for poor server respons
 
 Only using the demo database for now, so if it is not representative, the tests won't be either.
 
+`astress discover` filters out unpublished repositories, but uses `?all_ids=true` to list record IDs within published repositories. Because `?all_ids=true` does not filter by `publish` status, `.astress-resources.json` can include unpublished records that return `404` on the PUI.
+
 ## Compute Scaling
 
 Use [the `deploy.resources` section of docker-compose.yml](https://docs.docker.com/reference/compose-file/deploy/#resources)to set CPU and memory limits for the ArchivesSpace container. These limit values are read from .env.docker.dev first, with defaults, and can be overridden by a local .env file. The idea is to match the compute resources a particular hosting service offers. I recommend setting the `limits` and `reservations` to be the same so the container is guaranteed to have that much compute available.

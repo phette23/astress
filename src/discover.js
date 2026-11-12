@@ -7,10 +7,13 @@ export const GLOBAL_RESOURCES = [
   'agents/families',
 ]
 
-// Start with top-level 'resources' (collections); child archival_objects and other
-// repo-scoped types will be added as their endpoints are wired up
 export const REPO_RESOURCES = [
   'resources',
+  'archival_objects',
+  'digital_objects',
+  'accessions',
+  'classifications',
+  'top_containers',
 ]
 
 /**
@@ -51,7 +54,8 @@ export async function discoverGlobal(_aspace, _type, _maxSample) {
 export async function discoverRepoScoped(aspace, repositories, type, maxSample) {
   const listsByRepo = await Promise.all(
     repositories.map(async (repoUri) => {
-      // ?all_ids=true returns a flat array of numeric IDs in one request without pagination
+      // ?all_ids=true returns a flat array of numeric IDs in one request without pagination.
+      // Note: this includes unpublished records, which will return 404 on PUI requests.
       const res = await aspace.api(`${repoUri}/${type}?all_ids=true`)
       if (!res.ok) throw new Error(`Failed to fetch ${repoUri}/${type}: ${res.status}`)
       const ids = await res.json()
