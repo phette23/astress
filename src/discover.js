@@ -70,7 +70,8 @@ export async function discover(aspace, { cacheFile = '.astress-cache.json', maxS
     ? JSON.parse(readFileSync(cacheFile, 'utf8'))
     : {}
 
-  const repositories = await discoverRepositories(aspace)
+  // Reuse cached repositories if already present, otherwise harvest from the API
+  const repositories = existing.repositories ?? await discoverRepositories(aspace)
 
   const resources = {}
   for (const type of GLOBAL_RESOURCES) {

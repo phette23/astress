@@ -91,11 +91,11 @@ test('discover subcommand handles non-existent and existent cache files', async 
   await main(['discover', '-f', configFile])
   assert.strictEqual(existsSync(cacheFile), true)
 
-  // Existent cache file
-  writeFileSync(cacheFile, JSON.stringify({ custom: true }))
+  // Existent cache file preserves cached repositories without re-fetching
+  writeFileSync(cacheFile, JSON.stringify({ repositories: ['/repositories/2'] }))
   await main(['discover', '-f', configFile])
   const secondCache = JSON.parse(readFileSync(cacheFile, 'utf8'))
-  assert.strictEqual(secondCache.custom, true)
+  assert.deepStrictEqual(secondCache.repositories, ['/repositories/2'])
 })
 
 test('discover harvests published repositories and initializes resource buckets', async (t) => {
@@ -116,7 +116,8 @@ test('discover harvests published repositories and initializes resource buckets'
     discovery: { cacheFile },
   }))
 
-  const cache = await main(['discover', '-f', configFile])
+  await main(['discover', '-f', configFile])
+  const cache = JSON.parse(readFileSync(cacheFile, 'utf8'))
   assert.deepStrictEqual(cache.repositories, ['/repositories/2'])
   assert.ok('subjects' in cache.resources)
   assert.ok('resources' in cache.resources)
