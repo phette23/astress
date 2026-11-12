@@ -1,18 +1,13 @@
-import { readFileSync } from 'node:fs'
-
 export class ASpace {
-  constructor(config = 'config.json') {
-    const conf = typeof config === 'string'
-      ? JSON.parse(readFileSync(config, 'utf8'))
-      : config
+  constructor(config = {}) {
+    const conf = config.aspace ?? config
 
-    this.config = conf
-    this.apiUrl = conf.target?.apiUrl?.replace(/\/$/, '')
-    this.puiUrl = conf.target?.puiUrl?.replace(/\/$/, '')
-    this.username = conf.target?.username
-    this.password = (conf.target?.passwordEnv && process.env[conf.target?.passwordEnv] || conf.target?.password)
+    this.apiUrl = conf.apiUrl?.replace(/\/$/, '')
+    this.puiUrl = conf.puiUrl?.replace(/\/$/, '')
+    this.username = conf.username
+    this.password = (conf.passwordEnv && process.env[conf.passwordEnv]) || conf.password
     // ? should timeout have a minimum? Setting it to "0" would make things unusable
-    this.timeout = conf.execution?.timeoutMs ?? 30000
+    this.timeout = conf.timeoutMs ?? 30000
     this.session = null
   }
 

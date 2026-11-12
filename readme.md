@@ -33,9 +33,9 @@ You can edit `JAVA_OPTS` in .env.docker.dev to set heap size and other JVM optio
 
 ## Traffic Levels
 
-Configure overall traffic in the `execution` section of config.json. The test runs until either `requests` total requests have been made or `duration` (in seconds) has elapsed. Either can be set to `null`. If both are set to `null`, the test runs indefinitely until manually stopped. A bounded, random millisecond `delay` is added between requests.
+Configure overall traffic in the `run.settings` section of config.json. The test runs until either `requests` total requests have been made or `duration` (in seconds) has elapsed. Either can be set to `null`. If both are set to `null`, the test runs indefinitely until manually stopped. A bounded, random millisecond `delay` is added between requests.
 
-The `workload` section divides up requests between public browsing, searching, and staff API usage. You can weight those three categories relative to each other and then also weight the types of resources being accessed within each category.
+The `run.workloads` section divides up requests between public browsing, searching, and staff API usage. You can weight those three categories relative to each other and then also weight the types of resources being accessed within each category.
 
 ## ArchivesSpace Configuration
 

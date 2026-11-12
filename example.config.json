@@ -1,21 +1,24 @@
 {
-  "target": {
+  "aspace": {
     "apiUrl": "http://localhost:8089",
     "puiUrl": "http://localhost:8081",
     "username": "admin",
     "password": "admin",
     "passwordEnv": "ASPACE_PASSWORD",
-    "cacheFile": ".astress-cache.json"
+    "timeoutMs": 30000
   },
   "discovery": {
-    "maxSamplePerType": 100,
-    "extractSearchTerms": 200
+    "cacheFile": ".astress-cache.json",
+    "extractSearchTerms": 200,
+    "maxSamplePerType": 100
   },
-  "execution": {
-    "concurrency": 10,
-    "requests": 1000,
-    "duration": null,
-    "timeoutMs": 30000,
-    "delay": [0, 500]
+  "run": {
+    "settings": {
+      "concurrency": 10,
+      "requests": 1000,
+      "duration": null,
+      "delay": [0, 500]
+    },
+    "workloads": {}
   }
 }
