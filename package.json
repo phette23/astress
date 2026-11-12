@@ -1,0 +1,26 @@
+{
+  "name": "astress",
+  "version": "0.1.0",
+  "description": "ArchivesSpace stress testing and benchmarking CLI tool",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "astress": "./src/cli.js"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "dependencies": {
+    "@faker-js/faker": "^10.6.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@stylistic/eslint-plugin": "^5.10.0",
+    "eslint": "^10.14.0",
+    "globals": "^17.14.0"
+  }
+}

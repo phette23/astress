@@ -1,0 +1,50 @@
+services:
+  app:
+    # https://hub.docker.com/r/archivesspace/archivesspace/tags
+    image: archivesspace/archivesspace:4.2.1
+    platform: linux/x86_64
+    depends_on:
+      db:
+        condition: service_healthy
+      solr:
+        condition: service_started
+    env_file:
+      - .env.docker.dev
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+      - "8089:8089"
+    deploy:
+          resources:
+            limits:
+              cpus: "2.0"
+              memory: 4g
+            reservations:
+              cpus: "2.0"
+              memory: 4g
+
+  db:
+    image: mysql:8
+    command: --character-set-server=UTF8MB4 --innodb_buffer_pool_size=2G --innodb_buffer_pool_instances=2 --log_bin_trust_function_creators=1
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: archivesspace
+      MYSQL_USER: as
+      MYSQL_PASSWORD: as123
+    ports:
+      - "3308:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uas", "-pas123"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  solr:
+    image: archivesspace/solr:4.2.1
+    platform: linux/x86_64
+    command:
+      - solr-precreate
+      - archivesspace
+      - /opt/solr/server/solr/configsets/archivesspace
+    ports:
+      - "8985:8983"
