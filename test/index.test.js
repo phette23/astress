@@ -58,23 +58,61 @@ test('handles anonymous PUI, anonymous API, and authenticated API requests', asy
 })
 
 test('discover subcommand handles non-existent and existent cache files', async (t) => {
+  t.mock.method(globalThis, 'fetch', async (url) => {
+    if (url.endsWith('/users/admin/login')) {
+      return Response.json({ session: 'tok-123' })
+    }
+    return Response.json([])
+  })
+
   const dir = mkdtempSync(join(tmpdir(), 'astress-'))
   t.after(() => rmSync(dir, { recursive: true, force: true }))
 
   const cacheFile = join(dir, '.astress-cache.json')
   const configFile = join(dir, 'config.json')
-  writeFileSync(configFile, JSON.stringify({ discovery: { cacheFile } }))
+  writeFileSync(configFile, JSON.stringify({
+    aspace: { apiUrl: 'http://localhost:8089', username: 'admin', password: 'admin' },
+    discovery: { cacheFile },
+  }))
 
   // Non-existent cache file
   assert.strictEqual(existsSync(cacheFile), false)
   await main(['discover', '-f', configFile])
   assert.strictEqual(existsSync(cacheFile), true)
-  assert.deepStrictEqual(JSON.parse(readFileSync(cacheFile, 'utf8')), {})
 
   // Existent cache file
-  writeFileSync(cacheFile, JSON.stringify({ repositories: ['/repositories/2'] }))
+  writeFileSync(cacheFile, JSON.stringify({ custom: true }))
   await main(['discover', '-f', configFile])
-  assert.deepStrictEqual(JSON.parse(readFileSync(cacheFile, 'utf8')), {
-    repositories: ['/repositories/2'],
+  const secondCache = JSON.parse(readFileSync(cacheFile, 'utf8'))
+  assert.strictEqual(secondCache.custom, true)
+})
+
+test('discover harvests published repositories and initializes resource buckets', async (t) => {
+  t.mock.method(globalThis, 'fetch', async (url) => {
+    if (url.endsWith('/users/admin/login')) {
+      return Response.json({ session: 'tok-123' })
+    }
+    if (url.endsWith('/repositories')) {
+      return Response.json([
+        { uri: '/repositories/2', publish: true },
+        { uri: '/repositories/3', publish: false },
+      ])
+    }
+    return Response.json([])
   })
+
+  const dir = mkdtempSync(join(tmpdir(), 'astress-'))
+  t.after(() => rmSync(dir, { recursive: true, force: true }))
+
+  const cacheFile = join(dir, '.astress-cache.json')
+  const configFile = join(dir, 'config.json')
+  writeFileSync(configFile, JSON.stringify({
+    aspace: { apiUrl: 'http://localhost:8089', username: 'admin', password: 'admin' },
+    discovery: { cacheFile },
+  }))
+
+  const cache = await main(['discover', '-f', configFile])
+  assert.deepStrictEqual(cache.repositories, ['/repositories/2'])
+  assert.ok('subjects' in cache.resources)
+  assert.ok('resources' in cache.resources)
 })

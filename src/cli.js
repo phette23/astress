@@ -4,6 +4,11 @@ import { loadConfig } from './config.js'
 import { ASpace } from './aspace.js'
 import { discover } from './discover.js'
 
+/**
+ * Parse CLI arguments and dispatch the requested subcommand.
+ * @param {string[]} [args=process.argv.slice(2)] - CLI arguments
+ * @returns {Promise<unknown>} Result of the executed subcommand
+ */
 export async function main(args = process.argv.slice(2)) {
   const { values, positionals } = parseArgs({
     args,

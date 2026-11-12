@@ -1,6 +1,10 @@
 import { readFileSync } from 'node:fs'
 
-// Load configuration from file
+/**
+ * Load configuration from a JSON file path (or object) and apply section defaults.
+ * @param {string|object} [config='config.json'] - Path to config file or raw config object
+ * @returns {{ aspace: object, discovery: object, run: { settings: object, workloads: object } }}
+ */
 export function loadConfig(config = 'config.json') {
   const raw = typeof config === 'string'
     ? JSON.parse(readFileSync(config, 'utf8'))
