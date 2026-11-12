@@ -16,7 +16,7 @@ export function loadConfig(config = 'config.json') {
       ...raw.aspace,
     },
     discovery: {
-      cacheFile: '.astress-cache.json',
+      resourcesFile: '.astress-resources.json',
       ...raw.discovery,
     },
     run: {

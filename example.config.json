@@ -8,7 +8,7 @@
     "timeoutMs": 30000
   },
   "discovery": {
-    "cacheFile": ".astress-cache.json",
+    "resourcesFile": ".astress-resources.json",
     "extractSearchTerms": 200,
     "maxSamplePerType": 100
   },

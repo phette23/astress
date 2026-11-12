@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { writeFileSync } from 'node:fs'
 
 export const GLOBAL_RESOURCES = [
   'subjects',
@@ -57,21 +57,16 @@ export async function discoverRepoScoped(_aspace, _repositories, _type, _maxSamp
 }
 
 /**
- * Run discovery against an ArchivesSpace instance and persist the manifest to disk.
+ * Run discovery against an ArchivesSpace instance and write the manifest to disk,
+ * overwriting any existing resources file.
  * @param {ASpace} aspace - Configured ASpace client
  * @param {object} [options] - Discovery configuration
- * @param {string} [options.cacheFile='.astress-cache.json'] - Path to read/write cache manifest
+ * @param {string} [options.resourcesFile='.astress-resources.json'] - Path to write resources manifest
  * @param {number} [options.maxSamplePerType=100] - Max URIs to sample per resource type
- * @returns {Promise<object>} Updated discovery cache object
+ * @returns {Promise<object>} Discovered resources manifest
  */
-export async function discover(aspace, { cacheFile = '.astress-cache.json', maxSamplePerType = 100 } = {}) {
-  // Preserve any existing cache keys before overwriting discovered sections
-  const existing = existsSync(cacheFile)
-    ? JSON.parse(readFileSync(cacheFile, 'utf8'))
-    : {}
-
-  // Reuse cached repositories if already present, otherwise harvest from the API
-  const repositories = existing.repositories ?? await discoverRepositories(aspace)
+export async function discover(aspace, { resourcesFile = '.astress-resources.json', maxSamplePerType = 100 } = {}) {
+  const repositories = await discoverRepositories(aspace)
 
   const resources = {}
   for (const type of GLOBAL_RESOURCES) {
@@ -81,12 +76,11 @@ export async function discover(aspace, { cacheFile = '.astress-cache.json', maxS
     resources[type] = await discoverRepoScoped(aspace, repositories, type, maxSamplePerType)
   }
 
-  const cache = {
-    ...existing,
+  const manifest = {
     repositories,
     resources,
   }
 
-  writeFileSync(cacheFile, JSON.stringify(cache, null, 2))
-  return cache
+  writeFileSync(resourcesFile, JSON.stringify(manifest, null, 2))
+  return manifest
 }

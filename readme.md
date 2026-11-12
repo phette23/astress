@@ -14,7 +14,7 @@ Configure [the traffic levels](#traffic-levels) you want in config.json.
 
 1. Start the docker container for ArchivesSpace. `./start.sh` should do most of this. Docker config was copied from the main ArchivesSpace repo. It can take a while for the container to be ready with loaded data; check the PUI URL in a browser to see if it is ready or watch the logs with `docker compose logs app -f`.
 2. Create your own configuration based on the testing you want to do `cp config.example.json config.json`.
-3. Look up resource IDs in ArchivesSpace; `astress discover [-f config.json]`. This primes a cache file .astress-cache.json with IDs so tests hit actual resources instead of 404ing.
+3. Look up resource IDs in ArchivesSpace; `astress discover [-f config.json]`. This writes `.astress-resources.json` with IDs so tests hit actual resources instead of 404ing.
 4. Run the stress test `astress run [-f config.json]`.
 5. Optionally, try to use the local site while the stress test is running.
 6. Run `docker compose down` when done.

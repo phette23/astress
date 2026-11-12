@@ -33,7 +33,7 @@ function mockFetch(t, routes = {}, fallback = []) {
 
 test('loads config from file and resolves aspace client settings', () => {
   const config = loadConfig('example.config.json')
-  assert.strictEqual(config.discovery.cacheFile, '.astress-cache.json')
+  assert.strictEqual(config.discovery.resourcesFile, '.astress-resources.json')
   assert.strictEqual(config.run.settings.concurrency, 10)
 
   const aspace = new ASpace(config.aspace)
@@ -73,29 +73,30 @@ test('handles anonymous PUI, anonymous API, and authenticated API requests', asy
   assert.strictEqual(calls.length, 5)
 })
 
-test('discover subcommand handles non-existent and existent cache files', async (t) => {
+test('discover subcommand handles non-existent and existent resources files', async (t) => {
   mockFetch(t)
 
   const dir = mkdtempSync(join(tmpdir(), 'astress-'))
   t.after(() => rmSync(dir, { recursive: true, force: true }))
 
-  const cacheFile = join(dir, '.astress-cache.json')
+  const resourcesFile = join(dir, '.astress-resources.json')
   const configFile = join(dir, 'config.json')
   writeFileSync(configFile, JSON.stringify({
     aspace: { apiUrl: 'http://localhost:8089', username: 'admin', password: 'admin' },
-    discovery: { cacheFile },
+    discovery: { resourcesFile },
   }))
 
-  // Non-existent cache file
-  assert.strictEqual(existsSync(cacheFile), false)
+  // Non-existent resources file
+  assert.strictEqual(existsSync(resourcesFile), false)
   await main(['discover', '-f', configFile])
-  assert.strictEqual(existsSync(cacheFile), true)
+  assert.strictEqual(existsSync(resourcesFile), true)
 
-  // Existent cache file preserves cached repositories without re-fetching
-  writeFileSync(cacheFile, JSON.stringify({ repositories: ['/repositories/2'] }))
+  // Existent resources file is overwritten with fresh discovery output
+  writeFileSync(resourcesFile, JSON.stringify({ stale: true }))
   await main(['discover', '-f', configFile])
-  const secondCache = JSON.parse(readFileSync(cacheFile, 'utf8'))
-  assert.deepStrictEqual(secondCache.repositories, ['/repositories/2'])
+  const secondManifest = JSON.parse(readFileSync(resourcesFile, 'utf8'))
+  assert.strictEqual(secondManifest.stale, undefined)
+  assert.deepStrictEqual(secondManifest.repositories, [])
 })
 
 test('discover harvests published repositories and initializes resource buckets', async (t) => {
@@ -109,16 +110,16 @@ test('discover harvests published repositories and initializes resource buckets'
   const dir = mkdtempSync(join(tmpdir(), 'astress-'))
   t.after(() => rmSync(dir, { recursive: true, force: true }))
 
-  const cacheFile = join(dir, '.astress-cache.json')
+  const resourcesFile = join(dir, '.astress-resources.json')
   const configFile = join(dir, 'config.json')
   writeFileSync(configFile, JSON.stringify({
     aspace: { apiUrl: 'http://localhost:8089', username: 'admin', password: 'admin' },
-    discovery: { cacheFile },
+    discovery: { resourcesFile },
   }))
 
   await main(['discover', '-f', configFile])
-  const cache = JSON.parse(readFileSync(cacheFile, 'utf8'))
-  assert.deepStrictEqual(cache.repositories, ['/repositories/2'])
-  assert.ok('subjects' in cache.resources)
-  assert.ok('resources' in cache.resources)
+  const manifest = JSON.parse(readFileSync(resourcesFile, 'utf8'))
+  assert.deepStrictEqual(manifest.repositories, ['/repositories/2'])
+  assert.ok('subjects' in manifest.resources)
+  assert.ok('resources' in manifest.resources)
 })
