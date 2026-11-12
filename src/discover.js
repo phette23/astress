@@ -1,4 +1,5 @@
-import { writeFileSync } from 'node:fs'
+import {writeFileSync} from 'node:fs'
+import { debug } from './debug.js'
 
 export const GLOBAL_RESOURCES = [
   'subjects',
@@ -78,6 +79,7 @@ export async function discoverRepoScoped(aspace, repositories, type, maxSample) 
     if (!added) break
   }
 
+  if (sampled.length === 0) debug(`Found no ${type}`)
   return sampled
 }
 
@@ -92,6 +94,7 @@ export async function discoverRepoScoped(aspace, repositories, type, maxSample) 
  */
 export async function discover(aspace, { resourcesFile = '.astress-resources.json', maxSamplePerType = 100 } = {}) {
   const repositories = await discoverRepositories(aspace)
+  debug(`Found ${repositories.length} published repositories`)
 
   const resources = {}
   for (const type of GLOBAL_RESOURCES) {
@@ -107,5 +110,6 @@ export async function discover(aspace, { resourcesFile = '.astress-resources.jso
   }
 
   writeFileSync(resourcesFile, JSON.stringify(manifest, null, 2))
+  debug(`Wrote resources list to ${resourcesFile}`)
   return manifest
 }
