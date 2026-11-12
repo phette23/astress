@@ -3,6 +3,7 @@ import { parseArgs } from 'node:util'
 import { loadConfig } from './config.js'
 import { ASpace } from './aspace.js'
 import { discover } from './discover.js'
+import { setDebug } from './debug.js'
 
 /**
  * Parse CLI arguments and dispatch the requested subcommand.
@@ -14,9 +15,12 @@ export async function main(args = process.argv.slice(2)) {
     args,
     options: {
       config: { type: 'string', short: 'f', default: 'config.json' },
+      debug: { type: 'boolean', default: false },
     },
     allowPositionals: true,
   })
+
+  if (values.debug) setDebug(true)
 
   const config = loadConfig(values.config)
   const AS = new ASpace(config.aspace)

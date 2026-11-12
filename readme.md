@@ -19,6 +19,8 @@ Configure [the traffic levels](#traffic-levels) you want in config.json.
 5. Optionally, try to use the local site while the stress test is running.
 6. Run `docker compose down` when done.
 
+Set `DEBUG` to be `true` in your env to see more information.
+
 ## Limitations
 
 Large background jobs are probably the number one reason for poor server responsiveness and this project doesn't test that yet. We could add jobs to the workload categories and/or do something specific with an import of a large data file.

@@ -1,3 +1,5 @@
+import { debug } from './debug.js'
+
 export class ASpace {
   /**
    * @param {Object} [config={}] - Configuration options
@@ -68,6 +70,7 @@ export class ASpace {
    * @returns {Promise<Response>}
    */
   async request(url, options = {}) {
+    debug(`${options.method ?? 'GET'} ${url}`)
     return fetch(url, {
       signal: AbortSignal.timeout(this.timeout),
       ...options,
