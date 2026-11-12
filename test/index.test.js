@@ -123,10 +123,40 @@ test('discover harvests published repositories and samples repo-scoped resources
   await main(['discover', '-f', configFile])
   const manifest = JSON.parse(readFileSync(resourcesFile, 'utf8'))
   assert.deepStrictEqual(manifest.repositories, ['/repositories/2', '/repositories/4'])
-  assert.ok('subjects' in manifest.resources)
   assert.deepStrictEqual(manifest.resources.resources, [
     '/repositories/2/resources/1',
     '/repositories/4/resources/10',
     '/repositories/2/resources/2',
   ])
+})
+
+test('discover harvests and caps global resources up to maxSamplePerType', async (t) => {
+  mockFetch(t, {
+    '/subjects?all_ids=true': [10, 20, 30, 40],
+    '/agents/people?all_ids=true': [1, 2],
+  })
+
+  const dir = mkdtempSync(join(tmpdir(), 'astress-'))
+  t.after(() => rmSync(dir, { recursive: true, force: true }))
+
+  const resourcesFile = join(dir, '.astress-resources.json')
+  const configFile = join(dir, 'config.json')
+  writeFileSync(configFile, JSON.stringify({
+    aspace: { apiUrl: 'http://localhost:8089', username: 'admin', password: 'admin' },
+    discovery: { resourcesFile, maxSamplePerType: 3 },
+  }))
+
+  await main(['discover', '-f', configFile])
+  const manifest = JSON.parse(readFileSync(resourcesFile, 'utf8'))
+  assert.deepStrictEqual(manifest.resources.subjects, [
+    '/subjects/10',
+    '/subjects/20',
+    '/subjects/30',
+  ])
+  assert.deepStrictEqual(manifest.resources['agents/people'], [
+    '/agents/people/1',
+    '/agents/people/2',
+  ])
+  assert.deepStrictEqual(manifest.resources['agents/corporate_entities'], [])
+  assert.deepStrictEqual(manifest.resources['agents/families'], [])
 })

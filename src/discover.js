@@ -31,14 +31,16 @@ export async function discoverRepositories(aspace) {
 
 /**
  * Discover URIs for a global (non-repository-scoped) resource type.
- * @param {ASpace} _aspace - Configured ASpace client
- * @param {string} _type - API endpoint path (e.g. 'subjects' or 'agents/people')
- * @param {number} _maxSample - Maximum number of URIs to sample for this type
+ * @param {ASpace} aspace - Configured ASpace client
+ * @param {string} type - API endpoint path (e.g. 'subjects' or 'agents/people')
+ * @param {number} maxSample - Maximum number of URIs to sample for this type
  * @returns {Promise<string[]>} Sampled resource URIs
  */
-export async function discoverGlobal(_aspace, _type, _maxSample) {
-  // shortcut: returns empty list until global resource harvesting is implemented
-  return []
+export async function discoverGlobal(aspace, type, maxSample) {
+  const res = await aspace.api(`/${type}?all_ids=true`)
+  if (!res.ok) throw new Error(`Failed to fetch /${type}: ${res.status}`)
+  const ids = await res.json()
+  return ids.slice(0, maxSample).map((id) => `/${type}/${id}`)
 }
 
 /**
