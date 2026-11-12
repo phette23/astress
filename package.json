@@ -1,9 +1,9 @@
 {
   "name": "astress",
   "version": "0.1.0",
-  "description": "ArchivesSpace stress testing and benchmarking CLI tool",
+  "description": "ArchivesSpace stress testing CLI tool",
   "type": "module",
-  "main": "src/index.js",
+  "main": "src/aspace.js",
   "bin": {
     "astress": "./src/cli.js"
   },
@@ -12,7 +12,7 @@
     "test": "node --test"
   },
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=24.0.0"
   },
   "dependencies": {
     "@faker-js/faker": "^10.6.0"
