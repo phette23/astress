@@ -2,6 +2,7 @@
   "name": "astress",
   "version": "0.1.0",
   "description": "ArchivesSpace stress testing CLI tool",
+  "license": "MIT",
   "type": "module",
   "main": "src/aspace.js",
   "bin": {

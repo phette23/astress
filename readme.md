@@ -15,11 +15,14 @@ Configure [the traffic levels](#traffic-levels) you want in config.json.
 1. Start the docker container for ArchivesSpace. `./start.sh` should do most of this. Docker config was copied from the main ArchivesSpace repo. It can take a while for the container to be ready with loaded data; check the PUI URL in a browser to see if it is ready or watch the logs with `docker compose logs app -f`.
 2. Create your own configuration based on the testing you want to do `cp config.example.json config.json`.
 3. Look up resource IDs in ArchivesSpace; `astress discover [-f config.json]`. This writes `.astress-resources.json` with IDs so tests hit actual resources instead of 404ing.
-4. Run the stress test `astress run [-f config.json]`.
+4. **TBD** Run the stress test `astress run [-f config.json]`.
 5. Optionally, try to use the local site while the stress test is running.
 6. Run `docker compose down` when done.
 
 Set `DEBUG` to be `true` in your env to see more information.
+
+> [!CAUTION]
+> Pointing the stress test as a live instance may disrupt anyone actively using the system. This is best employed as a means of testing a staging or local development site.
 
 ## Limitations
 
@@ -48,3 +51,13 @@ The `run.workloads` section divides up requests between public browsing, searchi
 ## ArchivesSpace Configuration
 
 One way to test different ArchivesSpace configurations is to build your own docker image and replace the `app.image` line in docker-compose.yml. You could also edit the config files on the container (e.g. by `docker cp` them into place or `docker exec`) and restarting the services.
+
+## MIT License
+
+© 2026 Eric Phetteplace
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
